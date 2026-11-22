@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/async-handler.js';
 
 export const balanceRouter = Router();
 balanceRouter.use(requireAuth);
@@ -17,7 +18,7 @@ const balanceBodySchema = z.object({
   startingBalance: z.number().min(-1_000_000).max(1_000_000),
 });
 
-balanceRouter.get('/', async (req, res) => {
+balanceRouter.get('/', asyncHandler(async (req, res) => {
   const parsed = yearMonthQuerySchema.safeParse(req.query);
   if (!parsed.success) {
     return res.status(400).json({ error: 'year and month query params are required' });
@@ -29,9 +30,9 @@ balanceRouter.get('/', async (req, res) => {
     [req.userId, year, month]
   );
   res.json({ startingBalance: result.rows[0]?.startingBalance ?? '0' });
-});
+}));
 
-balanceRouter.put('/', async (req, res) => {
+balanceRouter.put('/', asyncHandler(async (req, res) => {
   const parsed = balanceBodySchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid balance data' });
@@ -47,4 +48,4 @@ balanceRouter.put('/', async (req, res) => {
     [req.userId, year, month, startingBalance]
   );
   res.json(result.rows[0]);
-});
+}));

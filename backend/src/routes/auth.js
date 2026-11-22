@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
+import { asyncHandler } from '../lib/async-handler.js';
 
 export const authRouter = Router();
 
@@ -15,7 +16,7 @@ function signToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
 }
 
-authRouter.post('/signup', async (req, res) => {
+authRouter.post('/signup', asyncHandler(async (req, res) => {
   const parsed = credentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid email or password (min 8 characters)' });
@@ -28,17 +29,26 @@ authRouter.post('/signup', async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const result = await pool.query(
-    'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
-    [email, passwordHash]
-  );
-  const user = result.rows[0];
+
+  let user;
+  try {
+    const result = await pool.query(
+      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+      [email, passwordHash]
+    );
+    user = result.rows[0];
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+    throw err;
+  }
 
   const token = signToken(user.id);
   res.status(201).json({ token, user: { id: user.id, email: user.email } });
-});
+}));
 
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', asyncHandler(async (req, res) => {
   const parsed = credentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid email or password' });
@@ -58,4 +68,4 @@ authRouter.post('/login', async (req, res) => {
 
   const token = signToken(user.id);
   res.json({ token, user: { id: user.id, email: user.email } });
-});
+}));

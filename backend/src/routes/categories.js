@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/async-handler.js';
 
 export const categoriesRouter = Router();
 categoriesRouter.use(requireAuth);
@@ -11,15 +12,15 @@ const categorySchema = z.object({
   color: z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
 });
 
-categoriesRouter.get('/', async (req, res) => {
+categoriesRouter.get('/', asyncHandler(async (req, res) => {
   const result = await pool.query(
     'SELECT id, name, color FROM categories WHERE user_id = $1 ORDER BY name',
     [req.userId]
   );
   res.json(result.rows);
-});
+}));
 
-categoriesRouter.post('/', async (req, res) => {
+categoriesRouter.post('/', asyncHandler(async (req, res) => {
   const parsed = categorySchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid category name or color' });
@@ -38,9 +39,9 @@ categoriesRouter.post('/', async (req, res) => {
     }
     throw err;
   }
-});
+}));
 
-categoriesRouter.delete('/:id', async (req, res) => {
+categoriesRouter.delete('/:id', asyncHandler(async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: 'Invalid category id' });
@@ -53,4 +54,4 @@ categoriesRouter.delete('/:id', async (req, res) => {
     return res.status(404).json({ error: 'Category not found' });
   }
   res.status(204).end();
-});
+}));
