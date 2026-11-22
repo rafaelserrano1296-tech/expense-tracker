@@ -141,7 +141,13 @@ export default function HomeScreen() {
             <View style={styles.expenseRow}>
               <View style={styles.expenseInfo}>
                 <Text style={styles.expenseDescription}>{item.description || 'No description'}</Text>
-                <Text style={styles.expenseCategory}>{item.categoryName ?? 'Uncategorized'}</Text>
+                {item.recurrenceType && (
+                  <Text style={styles.expenseCategory}>
+                    {item.recurrenceType === 'installment'
+                      ? `Installment ${item.installmentNumber}/${item.totalInstallments}`
+                      : 'Fixed, recurring'}
+                  </Text>
+                )}
               </View>
               <Text style={styles.expenseAmount}>{formatCurrency(Number(item.amount))}</Text>
             </View>

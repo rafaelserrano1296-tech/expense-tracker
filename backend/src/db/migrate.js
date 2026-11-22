@@ -17,19 +17,49 @@ CREATE TABLE IF NOT EXISTS categories (
   UNIQUE (user_id, name)
 );
 
+CREATE TABLE IF NOT EXISTS recurring_expenses (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  description TEXT,
+  amount NUMERIC(12, 2) NOT NULL,
+  recurrence_type TEXT NOT NULL CHECK (recurrence_type IN ('fixed', 'installment')),
+  day_of_month INTEGER NOT NULL CHECK (day_of_month BETWEEN 1 AND 31),
+  start_year INTEGER NOT NULL,
+  start_month INTEGER NOT NULL CHECK (start_month BETWEEN 1 AND 12),
+  total_installments INTEGER CHECK (total_installments IS NULL OR total_installments > 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS expenses (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+  recurring_expense_id INTEGER REFERENCES recurring_expenses(id) ON DELETE CASCADE,
+  installment_number INTEGER,
   amount NUMERIC(12, 2) NOT NULL,
   description TEXT,
   spent_at DATE NOT NULL DEFAULT CURRENT_DATE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (recurring_expense_id, installment_number)
 );
+
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS recurring_expense_id INTEGER REFERENCES recurring_expenses(id) ON DELETE CASCADE;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS installment_number INTEGER;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'expenses_recurring_expense_id_installment_number_key'
+  ) THEN
+    ALTER TABLE expenses ADD CONSTRAINT expenses_recurring_expense_id_installment_number_key
+      UNIQUE (recurring_expense_id, installment_number);
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON expenses(user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_spent_at ON expenses(spent_at);
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_expenses_user_id ON recurring_expenses(user_id);
 
 CREATE TABLE IF NOT EXISTS monthly_balances (
   id SERIAL PRIMARY KEY,

@@ -83,6 +83,8 @@ export const api = {
 
   deleteExpense: (id: number) => request<void>(`/expenses/${id}`, { method: 'DELETE' }),
 
+  cancelRecurringExpense: (id: number) => request<void>(`/expenses/recurring/${id}`, { method: 'DELETE' }),
+
   getBalance: (year: number, month: number) =>
     request<{ startingBalance: string }>(`/balance?year=${year}&month=${month}`),
 
@@ -111,11 +113,20 @@ export type Expense = {
   categoryId: number | null;
   categoryName?: string | null;
   categoryColor?: string | null;
+  recurringExpenseId?: number | null;
+  installmentNumber?: number | null;
+  recurrenceType?: 'fixed' | 'installment' | null;
+  totalInstallments?: number | null;
 };
+
+export type RecurrenceInput =
+  | { type: 'fixed' }
+  | { type: 'installment'; totalInstallments: number };
 
 export type ExpenseInput = {
   amount: number;
   description?: string;
   categoryId?: number | null;
   spentAt?: string;
+  recurrence?: RecurrenceInput;
 };
