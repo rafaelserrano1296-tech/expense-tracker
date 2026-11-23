@@ -190,9 +190,14 @@ export default function HomeScreen() {
           renderItem={({ item }) => {
             const overdueDays = daysOverdue(item);
             const isOverdue = overdueDays > 0;
+            const isPaid = item.isPaid;
             return (
               <Pressable
-                style={[styles.expenseRow, isOverdue && styles.expenseRowOverdue]}
+                style={[
+                  styles.expenseRow,
+                  isOverdue && styles.expenseRowOverdue,
+                  isPaid && styles.expenseRowPaid,
+                ]}
                 onPress={() => setSelectedExpense(item)}
               >
                 <View style={styles.expenseInfo}>
@@ -208,9 +213,11 @@ export default function HomeScreen() {
                 </View>
                 <View style={styles.expenseRight}>
                   <Text style={styles.expenseAmount}>{formatCurrency(Number(item.amount))}</Text>
-                  {isOverdue && (
+                  {isPaid ? (
+                    <Text style={styles.paidText}>paid</Text>
+                  ) : isOverdue ? (
                     <Text style={styles.overdueText}>{overdueDays}d overdue</Text>
-                  )}
+                  ) : null}
                 </View>
               </Pressable>
             );
@@ -331,6 +338,9 @@ const styles = StyleSheet.create({
   expenseRowOverdue: {
     backgroundColor: '#FDEDEC',
   },
+  expenseRowPaid: {
+    backgroundColor: '#E8F8EE',
+  },
   expenseInfo: {
     flexShrink: 1,
   },
@@ -340,6 +350,12 @@ const styles = StyleSheet.create({
   overdueText: {
     fontSize: 12,
     color: Colors.danger,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  paidText: {
+    fontSize: 12,
+    color: Colors.primary,
     marginTop: 2,
     fontWeight: '600',
   },
