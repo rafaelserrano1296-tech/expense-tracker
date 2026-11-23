@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   footerLabel: {
     fontSize: 13,
     color: Colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '700',
   },
   footerValueEmphasis: {
     fontSize: 18,
