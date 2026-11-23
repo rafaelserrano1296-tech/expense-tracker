@@ -253,22 +253,9 @@ export default function HomeScreen() {
       )}
 
       <View style={[styles.footer, { paddingBottom: Math.max(12, insets.bottom) }]}>
-        <View style={styles.footerInfo}>
-          <View style={styles.footerRow}>
-            <Text style={styles.footerLabel}>Total Spent</Text>
-            <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
-          </View>
-          <View style={styles.footerRow}>
-            <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
-            <Text
-              style={[
-                styles.footerValueEmphasis,
-                currentBalance < 0 && styles.footerValueNegative,
-              ]}
-            >
-              {formatCurrency(currentBalance)}
-            </Text>
-          </View>
+        <View style={styles.footerColumn}>
+          <Text style={styles.footerLabel}>Total Spent</Text>
+          <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
         </View>
 
         <Pressable
@@ -277,6 +264,18 @@ export default function HomeScreen() {
         >
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
+
+        <View style={[styles.footerColumn, styles.footerColumnRight]}>
+          <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
+          <Text
+            style={[
+              styles.footerValueEmphasis,
+              currentBalance < 0 && styles.footerValueNegative,
+            ]}
+          >
+            {formatCurrency(currentBalance)}
+          </Text>
+        </View>
       </View>
 
       <ExpenseActionModal
@@ -419,23 +418,21 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
   },
-  footerInfo: {
+  footerColumn: {
     flex: 1,
-    gap: 6,
+    gap: 2,
   },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  footerColumnRight: {
+    alignItems: 'flex-end',
   },
   footerLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '500',
   },
@@ -445,12 +442,12 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   footerLabelEmphasis: {
-    fontSize: 15,
+    fontSize: 13,
     color: Colors.text,
     fontWeight: '700',
   },
   footerValueEmphasis: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: Colors.primary,
   },
