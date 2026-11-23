@@ -191,6 +191,7 @@ export default function HomeScreen() {
             const overdueDays = daysOverdue(item);
             const isOverdue = overdueDays > 0;
             const isPaid = item.isPaid;
+            const hasDarkBg = isPaid || isOverdue;
             return (
               <Pressable
                 style={[
@@ -201,14 +202,14 @@ export default function HomeScreen() {
                 onPress={() => setSelectedExpense(item)}
               >
                 <View style={styles.expenseInfo}>
-                  <Text style={[styles.expenseDescription, isPaid && styles.textOnPaid]}>
+                  <Text style={[styles.expenseDescription, hasDarkBg && styles.textOnDark]}>
                     {item.description || 'No description'}
                   </Text>
-                  <Text style={[styles.expenseCategory, isPaid && styles.textOnPaidMuted]}>
+                  <Text style={[styles.expenseCategory, hasDarkBg && styles.textOnDarkMuted]}>
                     {formatShortDate(item.spentAt)}
                   </Text>
                   {item.recurrenceType && (
-                    <Text style={[styles.expenseCategory, isPaid && styles.textOnPaidMuted]}>
+                    <Text style={[styles.expenseCategory, hasDarkBg && styles.textOnDarkMuted]}>
                       {item.recurrenceType === 'installment'
                         ? `Installment ${item.installmentNumber}/${item.totalInstallments}`
                         : 'Fixed, recurring'}
@@ -216,7 +217,7 @@ export default function HomeScreen() {
                   )}
                 </View>
                 <View style={styles.expenseRight}>
-                  <Text style={[styles.expenseAmount, isPaid && styles.textOnPaid]}>
+                  <Text style={[styles.expenseAmount, hasDarkBg && styles.textOnDark]}>
                     {formatCurrency(Number(item.amount))}
                   </Text>
                   {isPaid ? (
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   expenseRowOverdue: {
-    backgroundColor: '#FDEDEC',
+    backgroundColor: Colors.danger,
   },
   expenseRowPaid: {
     backgroundColor: Colors.primary,
@@ -355,9 +356,9 @@ const styles = StyleSheet.create({
   },
   overdueText: {
     fontSize: 12,
-    color: Colors.danger,
+    color: '#fff',
     marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   paidText: {
     fontSize: 12,
@@ -365,10 +366,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: '700',
   },
-  textOnPaid: {
+  textOnDark: {
     color: '#fff',
   },
-  textOnPaidMuted: {
+  textOnDarkMuted: {
     color: 'rgba(255,255,255,0.85)',
   },
   expenseDescription: {
