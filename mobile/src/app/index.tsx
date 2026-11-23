@@ -253,29 +253,31 @@ export default function HomeScreen() {
       )}
 
       <View style={[styles.footer, { paddingBottom: Math.max(12, insets.bottom) }]}>
-        <View style={styles.footerRow}>
-          <Text style={styles.footerLabel}>Total Spent</Text>
-          <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
+        <View style={styles.footerInfo}>
+          <View style={styles.footerRow}>
+            <Text style={styles.footerLabel}>Total Spent</Text>
+            <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
+          </View>
+          <View style={styles.footerRow}>
+            <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
+            <Text
+              style={[
+                styles.footerValueEmphasis,
+                currentBalance < 0 && styles.footerValueNegative,
+              ]}
+            >
+              {formatCurrency(currentBalance)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.footerRow}>
-          <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
-          <Text
-            style={[
-              styles.footerValueEmphasis,
-              currentBalance < 0 && styles.footerValueNegative,
-            ]}
-          >
-            {formatCurrency(currentBalance)}
-          </Text>
-        </View>
-      </View>
 
-      <Pressable
-        style={[styles.fab, { bottom: 76 + insets.bottom }]}
-        onPress={() => router.push({ pathname: '/add-expense', params: { year: cursor.year, month: cursor.month } })}
-      >
-        <Ionicons name="add" size={32} color="#fff" />
-      </Pressable>
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push({ pathname: '/add-expense', params: { year: cursor.year, month: cursor.month } })}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </Pressable>
+      </View>
 
       <ExpenseActionModal
         expense={selectedExpense}
@@ -415,10 +417,16 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+  },
+  footerInfo: {
+    flex: 1,
     gap: 6,
   },
   footerRow: {
@@ -450,13 +458,10 @@ const styles = StyleSheet.create({
     color: Colors.danger,
   },
   fab: {
-    position: 'absolute',
-    bottom: 76,
-    alignSelf: 'center',
     backgroundColor: Colors.primary,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
