@@ -256,7 +256,9 @@ export default function HomeScreen() {
       <View style={[styles.footer, { paddingBottom: Math.max(12, insets.bottom) }]}>
         <View style={styles.footerColumn}>
           <Text style={styles.footerLabel}>Total Spent</Text>
-          <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
+          <Text style={[styles.footerValueEmphasis, styles.footerValueNegative]}>
+            {formatCurrency(monthTotal)}
+          </Text>
         </View>
 
         <Pressable
@@ -267,11 +269,11 @@ export default function HomeScreen() {
         </Pressable>
 
         <View style={[styles.footerColumn, styles.footerColumnRight]}>
-          <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
+          <Text style={styles.footerLabel}>Current Balance</Text>
           <Text
             style={[
               styles.footerValueEmphasis,
-              currentBalance < 0 && styles.footerValueNegative,
+              currentBalance < 0 ? styles.footerValueNegative : styles.footerValuePositive,
             ]}
           >
             {formatCurrency(currentBalance)}
@@ -444,19 +446,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontWeight: '500',
   },
-  footerValue: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  footerLabelEmphasis: {
-    fontSize: 13,
-    color: Colors.text,
-    fontWeight: '700',
-  },
   footerValueEmphasis: {
     fontSize: 18,
     fontWeight: '800',
+  },
+  footerValuePositive: {
     color: Colors.primary,
   },
   footerValueNegative: {
