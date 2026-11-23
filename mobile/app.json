@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "Expense Tracker",
-    "slug": "expense-tracker",
+    "name": "Personal Finance",
+    "slug": "personal-finance",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expensetracker",
+    "scheme": "personalfinance",
     "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": true,
-      "bundleIdentifier": "com.rafaelserrano.expensetracker"
+      "bundleIdentifier": "com.rafaelserrano.personalfinance"
     },
     "android": {
-      "package": "com.rafaelserrano.expensetracker",
+      "package": "com.rafaelserrano.personalfinance",
       "adaptiveIcon": {
         "backgroundColor": "#1E8E4E",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
