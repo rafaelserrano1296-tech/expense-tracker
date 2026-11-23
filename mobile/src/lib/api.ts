@@ -81,6 +81,9 @@ export const api = {
   updateExpense: (id: number, input: ExpenseInput) =>
     request<Expense>(`/expenses/${id}`, { method: 'PUT', body: JSON.stringify(input) }),
 
+  patchExpense: (id: number, input: { spentAt?: string; isPaid?: boolean }) =>
+    request<Expense>(`/expenses/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+
   deleteExpense: (id: number) => request<void>(`/expenses/${id}`, { method: 'DELETE' }),
 
   cancelRecurringExpense: (id: number) => request<void>(`/expenses/recurring/${id}`, { method: 'DELETE' }),
@@ -117,6 +120,7 @@ export type Expense = {
   installmentNumber?: number | null;
   recurrenceType?: 'fixed' | 'installment' | null;
   totalInstallments?: number | null;
+  isPaid: boolean;
 };
 
 export type RecurrenceInput =

@@ -63,6 +63,7 @@ expensesRouter.get('/', asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `SELECT e.id, e.amount, e.description, e.spent_at AS "spentAt", e.category_id AS "categoryId",
+            e.is_paid AS "isPaid",
             c.name AS "categoryName", c.color AS "categoryColor",
             e.recurring_expense_id AS "recurringExpenseId", e.installment_number AS "installmentNumber",
             r.recurrence_type AS "recurrenceType", r.total_installments AS "totalInstallments"
@@ -186,8 +187,40 @@ expensesRouter.put('/:id', asyncHandler(async (req, res) => {
   const result = await pool.query(
     `UPDATE expenses SET amount = $1, description = $2, category_id = $3, spent_at = COALESCE($4, spent_at)
      WHERE id = $5 AND user_id = $6
-     RETURNING id, amount, description, spent_at AS "spentAt", category_id AS "categoryId"`,
+     RETURNING id, amount, description, spent_at AS "spentAt", category_id AS "categoryId", is_paid AS "isPaid"`,
     [amount, description ?? null, categoryId ?? null, spentAt ?? null, id, req.userId]
+  );
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: 'Expense not found' });
+  }
+  res.json(result.rows[0]);
+}));
+
+const expensePatchSchema = z.object({
+  spentAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  isPaid: z.boolean().optional(),
+}).refine((v) => v.spentAt !== undefined || v.isPaid !== undefined, {
+  message: 'At least one field must be provided',
+});
+
+expensesRouter.patch('/:id', asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Invalid expense id' });
+  }
+  const parsed = expensePatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid patch data' });
+  }
+  const { spentAt, isPaid } = parsed.data;
+
+  const result = await pool.query(
+    `UPDATE expenses SET
+       spent_at = COALESCE($1, spent_at),
+       is_paid = COALESCE($2, is_paid)
+     WHERE id = $3 AND user_id = $4
+     RETURNING id, amount, description, spent_at AS "spentAt", category_id AS "categoryId", is_paid AS "isPaid"`,
+    [spentAt ?? null, isPaid ?? null, id, req.userId]
   );
   if (result.rows.length === 0) {
     return res.status(404).json({ error: 'Expense not found' });

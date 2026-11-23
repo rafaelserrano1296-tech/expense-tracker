@@ -1,12 +1,24 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { api, ApiError, type RecurrenceInput } from '@/lib/api';
 import { Colors } from '@/constants/theme';
 
 type RepeatMode = 'none' | 'repeat';
 type RepeatKind = 'fixed' | 'installment';
+
+function toDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDisplayDate(date: Date) {
+  return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 
 export default function AddExpenseScreen() {
   const params = useLocalSearchParams<{ year: string; month: string }>();
@@ -15,6 +27,12 @@ export default function AddExpenseScreen() {
 
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    const day = Math.min(now.getDate(), new Date(year, month, 0).getDate());
+    return new Date(year, month - 1, day);
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('none');
   const [repeatKind, setRepeatKind] = useState<RepeatKind>('fixed');
   const [installments, setInstallments] = useState('12');
@@ -45,15 +63,10 @@ export default function AddExpenseScreen() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const day = new Date().getDate();
-      const daysInMonth = new Date(year, month, 0).getDate();
-      const safeDay = Math.min(day, daysInMonth);
-      const spentAt = `${year}-${String(month).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
-
       await api.createExpense({
         amount: numericAmount,
         description: description.trim() || undefined,
-        spentAt,
+        spentAt: toDateString(date),
         recurrence,
       });
       router.back();
@@ -83,6 +96,22 @@ export default function AddExpenseScreen() {
         value={description}
         onChangeText={setDescription}
       />
+
+      <Text style={styles.label}>Date</Text>
+      <Pressable style={styles.input} onPress={() => setShowDatePicker(true)}>
+        <Text style={styles.dateText}>{formatDisplayDate(date)}</Text>
+      </Pressable>
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.select({ ios: 'spinner', default: 'default' })}
+          onChange={(_event, selectedDate) => {
+            setShowDatePicker(Platform.OS === 'ios');
+            if (selectedDate) setDate(selectedDate);
+          }}
+        />
+      )}
 
       <View style={styles.radioRow}>
         <RadioOption
@@ -168,6 +197,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
     marginBottom: 8,
+  },
+  dateText: {
+    fontSize: 16,
+    color: Colors.text,
   },
   radioRow: {
     flexDirection: 'row',

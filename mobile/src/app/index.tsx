@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/auth-context';
 import { api, type Expense } from '@/lib/api';
 import { Colors } from '@/constants/theme';
+import { ExpenseActionModal } from '@/components/expense-action-modal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -21,6 +22,23 @@ const MONTH_NAMES = [
 
 function formatCurrency(value: number) {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function daysOverdue(expense: Expense): number {
+  if (expense.isPaid) return 0;
+  const spentDate = new Date(expense.spentAt.slice(0, 10) + 'T00:00:00');
+  const diffMs = startOfToday().getTime() - spentDate.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function formatShortDate(spentAt: string) {
+  const d = new Date(spentAt.slice(0, 10) + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export default function HomeScreen() {
@@ -33,6 +51,7 @@ export default function HomeScreen() {
   const [startingBalance, setStartingBalance] = useState(0);
   const [monthTotal, setMonthTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   const loadData = useCallback(async (year: number, month: number) => {
     setIsLoading(true);
@@ -84,6 +103,31 @@ export default function HomeScreen() {
   }
 
   const currentBalance = useMemo(() => startingBalance - monthTotal, [startingBalance, monthTotal]);
+  const hasOverdue = useMemo(() => expenses.some((e) => daysOverdue(e) > 0), [expenses]);
+
+  async function refresh() {
+    await loadData(cursor.year, cursor.month);
+  }
+
+  async function handleMarkPaid(expense: Expense, isPaid: boolean) {
+    await api.patchExpense(expense.id, { isPaid });
+    await refresh();
+  }
+
+  async function handleChangeDate(expense: Expense, newDate: Date) {
+    const spentAt = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+    await api.patchExpense(expense.id, { spentAt });
+    await refresh();
+  }
+
+  async function handleDelete(expense: Expense) {
+    if (expense.recurringExpenseId) {
+      await api.cancelRecurringExpense(expense.recurringExpenseId);
+    } else {
+      await api.deleteExpense(expense.id);
+    }
+    await refresh();
+  }
 
   if (isAuthLoading || !user) {
     return (
@@ -128,6 +172,12 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {hasOverdue && (
+        <View style={styles.overdueBanner}>
+          <Text style={styles.overdueBannerText}>There are overdue expenses</Text>
+        </View>
+      )}
+
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator color={Colors.primary} />
@@ -137,21 +187,34 @@ export default function HomeScreen() {
           data={expenses}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={expenses.length === 0 ? styles.emptyList : styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.expenseRow}>
-              <View style={styles.expenseInfo}>
-                <Text style={styles.expenseDescription}>{item.description || 'No description'}</Text>
-                {item.recurrenceType && (
-                  <Text style={styles.expenseCategory}>
-                    {item.recurrenceType === 'installment'
-                      ? `Installment ${item.installmentNumber}/${item.totalInstallments}`
-                      : 'Fixed, recurring'}
-                  </Text>
-                )}
-              </View>
-              <Text style={styles.expenseAmount}>{formatCurrency(Number(item.amount))}</Text>
-            </View>
-          )}
+          renderItem={({ item }) => {
+            const overdueDays = daysOverdue(item);
+            const isOverdue = overdueDays > 0;
+            return (
+              <Pressable
+                style={[styles.expenseRow, isOverdue && styles.expenseRowOverdue]}
+                onPress={() => setSelectedExpense(item)}
+              >
+                <View style={styles.expenseInfo}>
+                  <Text style={styles.expenseDescription}>{item.description || 'No description'}</Text>
+                  <Text style={styles.expenseCategory}>{formatShortDate(item.spentAt)}</Text>
+                  {item.recurrenceType && (
+                    <Text style={styles.expenseCategory}>
+                      {item.recurrenceType === 'installment'
+                        ? `Installment ${item.installmentNumber}/${item.totalInstallments}`
+                        : 'Fixed, recurring'}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.expenseRight}>
+                  <Text style={styles.expenseAmount}>{formatCurrency(Number(item.amount))}</Text>
+                  {isOverdue && (
+                    <Text style={styles.overdueText}>{overdueDays}d overdue</Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          }}
           ListEmptyComponent={<Text style={styles.emptyText}>No expenses this month.</Text>}
         />
       )}
@@ -173,6 +236,14 @@ export default function HomeScreen() {
       >
         <Ionicons name="add" size={32} color="#fff" />
       </Pressable>
+
+      <ExpenseActionModal
+        expense={selectedExpense}
+        onClose={() => setSelectedExpense(null)}
+        onMarkPaid={handleMarkPaid}
+        onChangeDate={handleChangeDate}
+        onDelete={handleDelete}
+      />
     </View>
   );
 }
@@ -238,6 +309,16 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 15,
   },
+  overdueBanner: {
+    backgroundColor: '#FBD5D5',
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  overdueBannerText: {
+    color: Colors.danger,
+    fontSize: 13,
+    fontWeight: '600',
+  },
   expenseRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -247,8 +328,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
+  expenseRowOverdue: {
+    backgroundColor: '#FDEDEC',
+  },
   expenseInfo: {
     flexShrink: 1,
+  },
+  expenseRight: {
+    alignItems: 'flex-end',
+  },
+  overdueText: {
+    fontSize: 12,
+    color: Colors.danger,
+    marginTop: 2,
+    fontWeight: '600',
   },
   expenseDescription: {
     fontSize: 16,
