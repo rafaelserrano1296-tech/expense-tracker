@@ -167,6 +167,7 @@ export default function HomeScreen() {
             <Text style={styles.balanceLabel}>
               Starting Balance: {formatCurrency(startingBalance)}
             </Text>
+            <Ionicons name="pencil" size={14} color="#fff" style={styles.balanceEditIcon} />
           </Pressable>
           <View style={styles.headerIcons}>
             <Pressable hitSlop={10} style={styles.iconButton}>
@@ -313,12 +314,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   balancePressable: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flexShrink: 1,
+    gap: 6,
   },
   balanceLabel: {
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
+    flexShrink: 1,
+  },
+  balanceEditIcon: {
+    opacity: 0.85,
   },
   headerIcons: {
     flexDirection: 'row',
