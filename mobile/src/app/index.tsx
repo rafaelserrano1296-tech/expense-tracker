@@ -129,6 +129,23 @@ export default function HomeScreen() {
     await refresh();
   }
 
+  async function handleDuplicateToNextMonth(expense: Expense) {
+    const original = new Date(expense.spentAt.slice(0, 10) + 'T00:00:00');
+    const nextMonthYear = original.getMonth() === 11 ? original.getFullYear() + 1 : original.getFullYear();
+    const nextMonth = original.getMonth() === 11 ? 1 : original.getMonth() + 2;
+    const daysInNextMonth = new Date(nextMonthYear, nextMonth, 0).getDate();
+    const day = Math.min(original.getDate(), daysInNextMonth);
+    const spentAt = `${nextMonthYear}-${String(nextMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    await api.createExpense({
+      amount: Number(expense.amount),
+      description: expense.description ?? undefined,
+      categoryId: expense.categoryId,
+      spentAt,
+    });
+    await refresh();
+  }
+
   if (isAuthLoading || !user) {
     return (
       <View style={styles.loadingContainer}>
@@ -257,6 +274,7 @@ export default function HomeScreen() {
         onMarkPaid={handleMarkPaid}
         onChangeDate={handleChangeDate}
         onDelete={handleDelete}
+        onDuplicateToNextMonth={handleDuplicateToNextMonth}
       />
     </View>
   );

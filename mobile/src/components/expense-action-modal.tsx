@@ -11,13 +11,21 @@ type Props = {
   onMarkPaid: (expense: Expense, isPaid: boolean) => Promise<void>;
   onChangeDate: (expense: Expense, newDate: Date) => Promise<void>;
   onDelete: (expense: Expense) => Promise<void>;
+  onDuplicateToNextMonth: (expense: Expense) => Promise<void>;
 };
 
 function toDate(spentAt: string) {
   return new Date(spentAt.slice(0, 10) + 'T00:00:00');
 }
 
-export function ExpenseActionModal({ expense, onClose, onMarkPaid, onChangeDate, onDelete }: Props) {
+export function ExpenseActionModal({
+  expense,
+  onClose,
+  onMarkPaid,
+  onChangeDate,
+  onDelete,
+  onDuplicateToNextMonth,
+}: Props) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -54,6 +62,13 @@ export function ExpenseActionModal({ expense, onClose, onMarkPaid, onChangeDate,
 
               <Pressable style={styles.actionRow} onPress={() => setShowDatePicker(true)}>
                 <Text style={styles.actionText}>Edit date</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.actionRow}
+                onPress={() => runAction(() => onDuplicateToNextMonth(expense))}
+              >
+                <Text style={styles.actionText}>Duplicate to next month</Text>
               </Pressable>
 
               <Pressable
