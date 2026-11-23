@@ -71,7 +71,7 @@ expensesRouter.get('/', asyncHandler(async (req, res) => {
      LEFT JOIN categories c ON c.id = e.category_id
      LEFT JOIN recurring_expenses r ON r.id = e.recurring_expense_id
      WHERE ${conditions.join(' AND ')}
-     ORDER BY e.spent_at DESC, e.id DESC`,
+     ORDER BY e.spent_at ASC, e.id ASC`,
     params
   );
   res.json(result.rows);
