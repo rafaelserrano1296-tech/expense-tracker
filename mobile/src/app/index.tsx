@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/lib/auth-context';
 import { api, type Expense } from '@/lib/api';
@@ -42,6 +43,7 @@ function formatShortDate(spentAt: string) {
 }
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
@@ -250,7 +252,7 @@ export default function HomeScreen() {
         />
       )}
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(12, insets.bottom) }]}>
         <View style={styles.footerRow}>
           <Text style={styles.footerLabel}>Total Spent</Text>
           <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
@@ -269,7 +271,7 @@ export default function HomeScreen() {
       </View>
 
       <Pressable
-        style={styles.fab}
+        style={[styles.fab, { bottom: 76 + insets.bottom }]}
         onPress={() => router.push({ pathname: '/add-expense', params: { year: cursor.year, month: cursor.month } })}
       >
         <Ionicons name="add" size={32} color="#fff" />
