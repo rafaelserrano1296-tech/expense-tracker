@@ -443,8 +443,8 @@ const styles = StyleSheet.create({
   },
   footerLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: '700',
+    color: Colors.text,
+    fontWeight: 'bold',
   },
   footerValueEmphasis: {
     fontSize: 18,
