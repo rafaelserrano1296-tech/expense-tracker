@@ -251,13 +251,20 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.footer}>
-        <View>
+        <View style={styles.footerRow}>
           <Text style={styles.footerLabel}>Total Spent</Text>
-          <Text style={styles.footerLabel}>Current Balance</Text>
-        </View>
-        <View>
           <Text style={styles.footerValue}>{formatCurrency(monthTotal)}</Text>
-          <Text style={styles.footerValue}>{formatCurrency(currentBalance)}</Text>
+        </View>
+        <View style={styles.footerRow}>
+          <Text style={styles.footerLabelEmphasis}>Current Balance</Text>
+          <Text
+            style={[
+              styles.footerValueEmphasis,
+              currentBalance < 0 && styles.footerValueNegative,
+            ]}
+          >
+            {formatCurrency(currentBalance)}
+          </Text>
         </View>
       </View>
 
@@ -406,24 +413,39 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    gap: 6,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   footerLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 6,
+    fontWeight: '500',
   },
   footerValue: {
     fontSize: 15,
     fontWeight: '700',
     color: Colors.text,
-    textAlign: 'right',
-    marginBottom: 6,
+  },
+  footerLabelEmphasis: {
+    fontSize: 15,
+    color: Colors.text,
+    fontWeight: '700',
+  },
+  footerValueEmphasis: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.primary,
+  },
+  footerValueNegative: {
+    color: Colors.danger,
   },
   fab: {
     position: 'absolute',
