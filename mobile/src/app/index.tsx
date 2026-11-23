@@ -201,10 +201,14 @@ export default function HomeScreen() {
                 onPress={() => setSelectedExpense(item)}
               >
                 <View style={styles.expenseInfo}>
-                  <Text style={styles.expenseDescription}>{item.description || 'No description'}</Text>
-                  <Text style={styles.expenseCategory}>{formatShortDate(item.spentAt)}</Text>
+                  <Text style={[styles.expenseDescription, isPaid && styles.textOnPaid]}>
+                    {item.description || 'No description'}
+                  </Text>
+                  <Text style={[styles.expenseCategory, isPaid && styles.textOnPaidMuted]}>
+                    {formatShortDate(item.spentAt)}
+                  </Text>
                   {item.recurrenceType && (
-                    <Text style={styles.expenseCategory}>
+                    <Text style={[styles.expenseCategory, isPaid && styles.textOnPaidMuted]}>
                       {item.recurrenceType === 'installment'
                         ? `Installment ${item.installmentNumber}/${item.totalInstallments}`
                         : 'Fixed, recurring'}
@@ -212,7 +216,9 @@ export default function HomeScreen() {
                   )}
                 </View>
                 <View style={styles.expenseRight}>
-                  <Text style={styles.expenseAmount}>{formatCurrency(Number(item.amount))}</Text>
+                  <Text style={[styles.expenseAmount, isPaid && styles.textOnPaid]}>
+                    {formatCurrency(Number(item.amount))}
+                  </Text>
                   {isPaid ? (
                     <Text style={styles.paidText}>paid</Text>
                   ) : isOverdue ? (
@@ -339,7 +345,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDEDEC',
   },
   expenseRowPaid: {
-    backgroundColor: '#E8F8EE',
+    backgroundColor: Colors.primary,
   },
   expenseInfo: {
     flexShrink: 1,
@@ -355,9 +361,15 @@ const styles = StyleSheet.create({
   },
   paidText: {
     fontSize: 12,
-    color: Colors.primary,
+    color: '#fff',
     marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  textOnPaid: {
+    color: '#fff',
+  },
+  textOnPaidMuted: {
+    color: 'rgba(255,255,255,0.85)',
   },
   expenseDescription: {
     fontSize: 16,
