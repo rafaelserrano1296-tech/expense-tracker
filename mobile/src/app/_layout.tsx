@@ -16,6 +16,10 @@ export default function RootLayout() {
           options={{ presentation: 'modal', headerShown: true, title: 'Add Expense' }}
         />
         <Stack.Screen
+          name="edit-expense"
+          options={{ presentation: 'modal', headerShown: true, title: 'Edit Expense' }}
+        />
+        <Stack.Screen
           name="set-balance"
           options={{ presentation: 'modal', headerShown: true, title: 'Starting Balance' }}
         />

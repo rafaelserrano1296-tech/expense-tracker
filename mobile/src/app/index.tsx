@@ -116,13 +116,12 @@ export default function HomeScreen() {
     await refresh();
   }
 
-  async function handleChangeDate(expense: Expense, newDate: Date) {
-    const spentAt = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
-    await api.patchExpense(expense.id, { spentAt });
+  async function handleDeleteOne(expense: Expense) {
+    await api.deleteExpense(expense.id);
     await refresh();
   }
 
-  async function handleDelete(expense: Expense) {
+  async function handleDeleteThisAndFuture(expense: Expense) {
     if (expense.recurringExpenseId) {
       await api.cancelRecurringExpense(expense.recurringExpenseId);
     } else {
@@ -285,8 +284,8 @@ export default function HomeScreen() {
         expense={selectedExpense}
         onClose={() => setSelectedExpense(null)}
         onMarkPaid={handleMarkPaid}
-        onChangeDate={handleChangeDate}
-        onDelete={handleDelete}
+        onDeleteOne={handleDeleteOne}
+        onDeleteThisAndFuture={handleDeleteThisAndFuture}
         onDuplicateToNextMonth={handleDuplicateToNextMonth}
       />
     </View>

@@ -26,6 +26,13 @@ export async function materializeRecurringExpenses(userId, year, month) {
     if (recurrence.recurrenceType === 'installment' && offset >= recurrence.totalInstallments) continue;
 
     const installmentNumber = offset + 1;
+
+    const { rows: skipped } = await pool.query(
+      `SELECT 1 FROM skipped_recurring_occurrences WHERE recurring_expense_id = $1 AND installment_number = $2`,
+      [recurrence.id, installmentNumber]
+    );
+    if (skipped.length > 0) continue;
+
     const day = Math.min(recurrence.dayOfMonth, lastDayOf(year, month));
     const spentAt = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 

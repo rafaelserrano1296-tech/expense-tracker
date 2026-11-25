@@ -62,6 +62,12 @@ CREATE INDEX IF NOT EXISTS idx_expenses_spent_at ON expenses(spent_at);
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
 CREATE INDEX IF NOT EXISTS idx_recurring_expenses_user_id ON recurring_expenses(user_id);
 
+CREATE TABLE IF NOT EXISTS skipped_recurring_occurrences (
+  recurring_expense_id INTEGER NOT NULL REFERENCES recurring_expenses(id) ON DELETE CASCADE,
+  installment_number INTEGER NOT NULL,
+  PRIMARY KEY (recurring_expense_id, installment_number)
+);
+
 CREATE TABLE IF NOT EXISTS monthly_balances (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

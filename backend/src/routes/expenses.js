@@ -185,10 +185,12 @@ expensesRouter.put('/:id', asyncHandler(async (req, res) => {
   }
 
   const result = await pool.query(
-    `UPDATE expenses SET amount = $1, description = $2, category_id = $3, spent_at = COALESCE($4, spent_at)
-     WHERE id = $5 AND user_id = $6
+    `UPDATE expenses SET amount = $1, description = $2,
+       category_id = CASE WHEN $3 THEN $4 ELSE category_id END,
+       spent_at = COALESCE($5, spent_at)
+     WHERE id = $6 AND user_id = $7
      RETURNING id, amount, description, spent_at AS "spentAt", category_id AS "categoryId", is_paid AS "isPaid"`,
-    [amount, description ?? null, categoryId ?? null, spentAt ?? null, id, req.userId]
+    [amount, description ?? null, categoryId !== undefined, categoryId ?? null, spentAt ?? null, id, req.userId]
   );
   if (result.rows.length === 0) {
     return res.status(404).json({ error: 'Expense not found' });
@@ -253,13 +255,25 @@ expensesRouter.delete('/:id', asyncHandler(async (req, res) => {
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: 'Invalid expense id' });
   }
-  const result = await pool.query(
-    'DELETE FROM expenses WHERE id = $1 AND user_id = $2 RETURNING id',
+
+  const existing = await pool.query(
+    'SELECT recurring_expense_id AS "recurringExpenseId", installment_number AS "installmentNumber" FROM expenses WHERE id = $1 AND user_id = $2',
     [id, req.userId]
   );
-  if (result.rows.length === 0) {
+  if (existing.rows.length === 0) {
     return res.status(404).json({ error: 'Expense not found' });
   }
+  const { recurringExpenseId, installmentNumber } = existing.rows[0];
+
+  if (recurringExpenseId != null) {
+    await pool.query(
+      `INSERT INTO skipped_recurring_occurrences (recurring_expense_id, installment_number)
+       VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+      [recurringExpenseId, installmentNumber]
+    );
+  }
+
+  await pool.query('DELETE FROM expenses WHERE id = $1 AND user_id = $2', [id, req.userId]);
   res.status(204).end();
 }));
 
