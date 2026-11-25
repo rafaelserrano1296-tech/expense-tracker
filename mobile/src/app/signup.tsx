@@ -20,10 +20,16 @@ export default function SignupScreen() {
   const { signup } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit() {
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
     try {
@@ -60,6 +66,14 @@ export default function SignupScreen() {
         placeholderTextColor={Colors.textSecondary}
         value={password}
         onChangeText={setPassword}
+      />
+      <PasswordInput
+        style={styles.input}
+        containerStyle={styles.passwordContainer}
+        placeholder="Confirm password"
+        placeholderTextColor={Colors.textSecondary}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
