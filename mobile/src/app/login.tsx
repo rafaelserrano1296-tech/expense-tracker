@@ -14,6 +14,7 @@ import { Link, router } from 'expo-router';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
 import { Colors } from '@/constants/theme';
+import { PasswordInput } from '@/components/password-input';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -52,11 +53,11 @@ export default function LoginScreen() {
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
+      <PasswordInput
         style={styles.input}
+        containerStyle={styles.passwordContainer}
         placeholder="Password"
         placeholderTextColor={Colors.textSecondary}
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
@@ -106,6 +107,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 14,
     color: Colors.text,
+  },
+  passwordContainer: {
+    marginBottom: 14,
   },
   button: {
     backgroundColor: Colors.primary,

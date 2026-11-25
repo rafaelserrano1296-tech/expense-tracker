@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { api, ApiError } from '@/lib/api';
 import { Colors } from '@/constants/theme';
+import { PasswordInput } from '@/components/password-input';
 
 export default function ChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
@@ -38,20 +39,20 @@ export default function ChangePasswordScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>New password</Text>
-      <TextInput
+      <PasswordInput
         style={styles.input}
+        containerStyle={styles.passwordContainer}
         placeholder="At least 8 characters"
-        secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
         autoFocus
       />
 
       <Text style={styles.label}>Confirm new password</Text>
-      <TextInput
+      <PasswordInput
         style={styles.input}
+        containerStyle={styles.passwordContainer}
         placeholder="Re-enter new password"
-        secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
@@ -86,6 +87,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: Colors.text,
+    marginBottom: 8,
+  },
+  passwordContainer: {
     marginBottom: 8,
   },
   button: {
