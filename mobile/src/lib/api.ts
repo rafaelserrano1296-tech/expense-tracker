@@ -60,6 +60,11 @@ export const api = {
   login: (email: string, password: string) =>
     request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
+  getMe: () => request<{ id: number; email: string }>('/auth/me'),
+
+  changePassword: (newPassword: string) =>
+    request<void>('/auth/change-password', { method: 'POST', body: JSON.stringify({ newPassword }) }),
+
   getCategories: () => request<Category[]>('/categories'),
 
   createCategory: (name: string, color?: string) =>

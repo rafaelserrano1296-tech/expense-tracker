@@ -23,6 +23,18 @@ export default function RootLayout() {
           name="set-balance"
           options={{ presentation: 'modal', headerShown: true, title: 'Starting Balance' }}
         />
+        <Stack.Screen
+          name="profile"
+          options={{ presentation: 'modal', headerShown: true, title: 'Profile' }}
+        />
+        <Stack.Screen
+          name="change-password"
+          options={{ presentation: 'modal', headerShown: true, title: 'Change Password' }}
+        />
+        <Stack.Screen
+          name="remove-ads"
+          options={{ presentation: 'modal', headerShown: true, title: 'Remove Ads' }}
+        />
       </Stack>
     </AuthProvider>
   );

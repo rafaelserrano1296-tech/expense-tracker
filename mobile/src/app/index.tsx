@@ -15,6 +15,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api, type Expense } from '@/lib/api';
 import { Colors } from '@/constants/theme';
 import { ExpenseActionModal } from '@/components/expense-action-modal';
+import { MainMenuModal } from '@/components/main-menu-modal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -54,6 +55,7 @@ export default function HomeScreen() {
   const [monthTotal, setMonthTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [showMainMenu, setShowMainMenu] = useState(false);
 
   const loadData = useCallback(async (year: number, month: number) => {
     setIsLoading(true);
@@ -166,13 +168,13 @@ export default function HomeScreen() {
             <Text style={styles.balanceLabel}>
               Starting Balance: {formatCurrency(startingBalance)}
             </Text>
-            <Ionicons name="pencil" size={14} color="#fff" style={styles.balanceEditIcon} />
+            <Ionicons name="add-circle" size={16} color="#fff" style={styles.balanceEditIcon} />
           </Pressable>
           <View style={styles.headerIcons}>
             <Pressable hitSlop={10} style={styles.iconButton}>
               <Ionicons name="search" size={22} color="#fff" />
             </Pressable>
-            <Pressable hitSlop={10} style={styles.iconButton}>
+            <Pressable hitSlop={10} style={styles.iconButton} onPress={() => setShowMainMenu(true)}>
               <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
             </Pressable>
           </View>
@@ -288,6 +290,8 @@ export default function HomeScreen() {
         onDeleteThisAndFuture={handleDeleteThisAndFuture}
         onDuplicateToNextMonth={handleDuplicateToNextMonth}
       />
+
+      <MainMenuModal visible={showMainMenu} onClose={() => setShowMainMenu(false)} />
     </View>
   );
 }
